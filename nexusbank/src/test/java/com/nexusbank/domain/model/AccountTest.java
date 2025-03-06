@@ -21,7 +21,8 @@ class AccountTest {
     // Then
     assertEquals(id, account.getId());
     assertEquals(userId, account.getUserId());
-    assertEquals(BigDecimal.ZERO, account.getBalance().getAmount());
+    // Usar el método equals para BigDecimal o convertir a double con tolerancia
+    assertEquals(0, BigDecimal.ZERO.compareTo(account.getBalance().getAmount()));
     assertEquals(currency, account.getBalance().getCurrency());
     assertTrue(account.isActive());
     assertNotNull(account.getCreatedAt());
@@ -40,7 +41,7 @@ class AccountTest {
     account.deposit(deposit);
 
     // Then
-    assertEquals(new BigDecimal("100.00"), account.getBalance().getAmount());
+    assertEquals(0, new BigDecimal("100.00").compareTo(account.getBalance().getAmount()));
   }
 
   @Test
@@ -56,7 +57,7 @@ class AccountTest {
     account.deposit(new Money(new BigDecimal("50.50"), "USD"));
 
     // Then
-    assertEquals(new BigDecimal("150.50"), account.getBalance().getAmount());
+    assertEquals(0, new BigDecimal("150.50").compareTo(account.getBalance().getAmount()));
   }
 
   @Test
@@ -86,7 +87,7 @@ class AccountTest {
     account.withdraw(withdrawal);
 
     // Then
-    assertEquals(new BigDecimal("40.00"), account.getBalance().getAmount());
+    assertEquals(0, new BigDecimal("40.00").compareTo(account.getBalance().getAmount()));
   }
 
   @Test

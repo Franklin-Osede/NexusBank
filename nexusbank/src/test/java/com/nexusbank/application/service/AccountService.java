@@ -27,7 +27,7 @@ public class AccountService implements CreateAccountUseCase, GetAccountUseCase {
 
   @Override
   public Account createAccount(String userId, Double initialDeposit) {
-    // Verificar que el usuario existe sin asignar a una variable
+    // Verificar que el usuario existe
     loadUserPort.loadUser(userId)
         .orElseThrow(() -> new UserNotFoundException("User with id " + userId + " not found"));
 

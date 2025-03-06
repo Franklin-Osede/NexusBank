@@ -1,84 +1,66 @@
 package com.nexusbank.domain.model;
 
-import lombok.Getter;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Objects;
 
-/**
- * Money value object representing an amount with a currency.
- * This is immutable to ensure thread safety and integrity of financial
- * calculations.
- */
-@Getter
-public final class Money {
-
+public class Money {
   private final BigDecimal amount;
   private final String currency;
 
+  public Money(Double amount) {
+    this(amount, "USD"); // Moneda predeterminada
+  }
+
+  public Money(Double amount, String currency) {
+    this.amount = BigDecimal.valueOf(amount).setScale(2, RoundingMode.HALF_EVEN);
+    this.currency = currency;
+  }
+
+  public Money(BigDecimal amount) {
+    this(amount, "USD"); // Moneda predeterminada
+  }
+
   public Money(BigDecimal amount, String currency) {
-    validateAmount(amount);
-    validateCurrency(currency);
-    this.amount = amount;
+    this.amount = amount.setScale(2, RoundingMode.HALF_EVEN);
     this.currency = currency;
   }
 
   public static Money zero(String currency) {
-    return new Money(BigDecimal.ZERO, currency);
+    return new Money(0.0, currency);
+  }
+
+  public BigDecimal getAmount() {
+    return amount;
+  }
+
+  public String getCurrency() {
+    return currency;
   }
 
   public Money add(Money money) {
-    validateSameCurrency(money);
+    if (!this.currency.equals(money.currency)) {
+      throw new IllegalArgumentException("Cannot add money with different currencies");
+    }
     return new Money(this.amount.add(money.amount), this.currency);
   }
 
   public Money subtract(Money money) {
-    validateSameCurrency(money);
-    BigDecimal newAmount = this.amount.subtract(money.amount);
-    if (newAmount.compareTo(BigDecimal.ZERO) < 0) {
-      throw new IllegalArgumentException("Cannot have negative money amount after subtraction");
-    }
-    return new Money(newAmount, this.currency);
-  }
-
-  public boolean isGreaterThan(Money money) {
-    validateSameCurrency(money);
-    return this.amount.compareTo(money.amount) > 0;
-  }
-
-  public boolean isLessThan(Money money) {
-    validateSameCurrency(money);
-    return this.amount.compareTo(money.amount) < 0;
-  }
-
-  public boolean isGreaterThanOrEqual(Money money) {
-    validateSameCurrency(money);
-    return this.amount.compareTo(money.amount) >= 0;
-  }
-
-  public boolean isLessThanOrEqual(Money money) {
-    validateSameCurrency(money);
-    return this.amount.compareTo(money.amount) <= 0;
-  }
-
-  private void validateAmount(BigDecimal amount) {
-    if (amount == null) {
-      throw new IllegalArgumentException("Amount cannot be null");
-    }
-    if (amount.compareTo(BigDecimal.ZERO) < 0) {
-      throw new IllegalArgumentException("Amount cannot be negative");
-    }
-  }
-
-  private void validateCurrency(String currency) {
-    if (currency == null || currency.trim().isEmpty()) {
-      throw new IllegalArgumentException("Currency cannot be null or empty");
-    }
-  }
-
-  private void validateSameCurrency(Money money) {
     if (!this.currency.equals(money.currency)) {
-      throw new IllegalArgumentException("Cannot operate on money with different currencies");
+      throw new IllegalArgumentException("Cannot subtract money with different currencies");
     }
+    return new Money(this.amount.subtract(money.amount), this.currency);
+  }
+
+  public boolean isLessThan(Money other) {
+    if (!this.currency.equals(other.currency)) {
+      throw new IllegalArgumentException("Cannot compare money with different currencies");
+    }
+    return this.amount.compareTo(other.amount) < 0;
+  }
+
+  public double toDouble() {
+    return amount.doubleValue();
   }
 
   @Override

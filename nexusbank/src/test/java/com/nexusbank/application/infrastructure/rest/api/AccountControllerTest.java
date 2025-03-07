@@ -10,6 +10,7 @@ import com.nexusbank.domain.model.Account;
 import com.nexusbank.domain.model.Money;
 import com.nexusbank.infrastructure.rest.controller.AccountController;
 import com.nexusbank.infrastructure.rest.dto.request.CreateAccountRequest;
+import com.nexusbank.infrastructure.rest.exception.RestExceptionHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -48,7 +49,13 @@ public class AccountControllerTest {
   void setUp() {
     // Se instancia el controlador utilizando los puertos de entrada simulados
     AccountController accountController = new AccountController(createAccountUseCase, getAccountUseCase);
-    mockMvc = MockMvcBuilders.standaloneSetup(accountController).build();
+
+    // Configurar MockMvc con el RestExceptionHandler para manejar excepciones
+    mockMvc = MockMvcBuilders
+        .standaloneSetup(accountController)
+        .setControllerAdvice(new RestExceptionHandler())
+        .build();
+
     objectMapper = new ObjectMapper();
     objectMapper.registerModule(new JavaTimeModule()); // Permite la serialización de LocalDateTime
   }
@@ -89,7 +96,10 @@ public class AccountControllerTest {
     mockMvc.perform(post("/api/accounts")
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isNotFound());
+        .andExpect(status().isNotFound())
+        // Verificar que la respuesta contiene los campos esperados del error
+        .andExpect(jsonPath("$.status").value(404))
+        .andExpect(jsonPath("$.error").value("User Not Found"));
   }
 
   @Test
@@ -117,7 +127,10 @@ public class AccountControllerTest {
         .thenThrow(new AccountNotFoundException(accountId));
 
     mockMvc.perform(get("/api/accounts/{accountId}", accountId))
-        .andExpect(status().isNotFound());
+        .andExpect(status().isNotFound())
+        // Verificar que la respuesta contiene los campos esperados del error
+        .andExpect(jsonPath("$.status").value(404))
+        .andExpect(jsonPath("$.error").value("Account Not Found"));
   }
 
   @Test
@@ -137,6 +150,20 @@ public class AccountControllerTest {
         .andExpect(jsonPath("$[0].balance.amount").value(500.0))
         .andExpect(jsonPath("$[1].id").value("acc-2"))
         .andExpect(jsonPath("$[1].balance.amount").value(300.0));
+
+    verify(getAccountUseCase).getAccountsByUserId(userId);
+  }
+
+  @Test
+  void getAccountsByUserId_shouldReturnEmptyListWhenNoAccountsExist() throws Exception {
+    String userId = "user-without-accounts";
+
+    when(getAccountUseCase.getAccountsByUserId(userId)).thenReturn(List.of());
+
+    mockMvc.perform(get("/api/accounts/user/{userId}", userId))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$").isArray())
+        .andExpect(jsonPath("$").isEmpty());
 
     verify(getAccountUseCase).getAccountsByUserId(userId);
   }

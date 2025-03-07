@@ -2,7 +2,7 @@ name: Java CI with Maven
 
 on:
   push:
-    branches: [ '**' ]  # Se activa con cualquier push a cualquier rama.
+    branches: [ '**' ]  # Se activa con cualquier push a cualquier rama
 
 jobs:
   build:
@@ -19,7 +19,7 @@ jobs:
         cache: maven
     
     - name: Build with Maven
-      run: mvn -B package --file pom.xml
+      run: mvn -B package --file nexusbank/pom.xml
       
     - name: Run tests
-      run: mvn test
+      run: cd nexusbank && mvn test

@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nexusbank-deployment
+  labels:
+    app: nexusbank
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nexusbank
+  template:
+    metadata:
+      labels:
+        app: nexusbank
+    spec:
+      containers:
+      - name: nexusbank
+        image: your-docker-registry/nexusbank:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: SPRING_DATASOURCE_URL
+          value: "jdbc:postgresql://postgres-service:5432/nexusbank"
+        - name: SPRING_DATASOURCE_USERNAME
+          value: "postgres"
+        - name: SPRING_DATASOURCE_PASSWORD
+          value: "password"
+        # Configuración de recursos para evitar que el contenedor agote recursos del clúster
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"

@@ -20,11 +20,10 @@ public class SecurityConfig {
             .requestMatchers("/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
             // Permitir acceso a la consola H2
             .requestMatchers("/h2-console/**").permitAll()
-            // Para fines de desarrollo, permitimos todas las rutas. En producción, esto
-            // debería ser más restrictivo
+            // Para fines de desarrollo, permitimos todas las rutas
             .requestMatchers("/**").permitAll())
-        // Configurar para la consola H2
-        .headers(headers -> headers.frameOptions().disable())
+        // Configurar para la consola H2 (usando el nuevo método recomendado)
+        .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()))
         // Uso de autenticación sin estado
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 

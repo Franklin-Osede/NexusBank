@@ -2,7 +2,7 @@ name: Java CI with Maven
 
 on:
   push:
-    branches: [ '**' ]  # Se activa con cualquier push a cualquier rama
+    branches: [ '**' ]  # Se activa con cualquier push a cualquier rama.
 
 jobs:
   build:

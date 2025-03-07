@@ -1,4 +1,4 @@
-name: Java CI with Maven - Test Only
+name: Java Tests CI
 
 on:
   push:
@@ -18,5 +18,124 @@ jobs:
         distribution: 'temurin'
         cache: maven
     
-    - name: Run tests only
-      run: cd nexusbank && mvn test -DskipMain=true
+    - name: Create missing port interfaces
+      run: |
+        mkdir -p nexusbank/src/main/java/com/nexusbank/application/port/out
+        
+        # LoadAccountPort
+        cat > nexusbank/src/main/java/com/nexusbank/application/port/out/LoadAccountPort.java << 'EOF'
+        package com.nexusbank.application.port.out;
+
+        import com.nexusbank.domain.model.Account;
+        import java.util.List;
+        import java.util.Optional;
+
+        public interface LoadAccountPort {
+          /**
+           * Carga una cuenta por su ID.
+           * 
+           * @param accountId ID de la cuenta a cargar
+           * @return Optional con la cuenta encontrada o vacío si no existe
+           */
+          Optional<Account> loadAccount(String accountId);
+
+          /**
+           * Carga todas las cuentas pertenecientes a un usuario.
+           * 
+           * @param userId ID del usuario propietario de las cuentas
+           * @return Lista de cuentas del usuario
+           */
+          List<Account> loadAccountsByUserId(String userId);
+        }
+        EOF
+        
+        # LoadUserPort
+        cat > nexusbank/src/main/java/com/nexusbank/application/port/out/LoadUserPort.java << 'EOF'
+        package com.nexusbank.application.port.out;
+
+        import com.nexusbank.domain.model.User;
+
+        import java.util.Optional;
+
+        public interface LoadUserPort {
+          /**
+           * Loads a user by ID.
+           * 
+           * @param userId ID of the user to load
+           * @return User if found, empty Optional otherwise
+           */
+          Optional<User> loadUser(String userId);
+
+          /**
+           * Finds a user by email.
+           * 
+           * @param email Email to search for
+           * @return User if found, empty Optional otherwise
+           */
+          Optional<User> findUserByEmail(String email);
+        }
+        EOF
+        
+        # SaveAccountPort
+        cat > nexusbank/src/main/java/com/nexusbank/application/port/out/SaveAccountPort.java << 'EOF'
+        package com.nexusbank.application.port.out;
+
+        import com.nexusbank.domain.model.Account;
+
+        public interface SaveAccountPort {
+          /**
+           * Guarda una cuenta nueva o actualiza una existente.
+           * 
+           * @param account La cuenta a guardar o actualizar
+           * @return La cuenta guardada
+           */
+          Account saveAccount(Account account);
+        }
+        EOF
+        
+        # SaveTransactionPort
+        cat > nexusbank/src/main/java/com/nexusbank/application/port/out/SaveTransactionPort.java << 'EOF'
+        package com.nexusbank.application.port.out;
+
+        import com.nexusbank.domain.model.Transaction;
+        import java.util.List;
+
+        public interface SaveTransactionPort {
+          /**
+           * Guarda una nueva transacción.
+           * 
+           * @param transaction La transacción a guardar
+           * @return La transacción guardada
+           */
+          Transaction saveTransaction(Transaction transaction);
+
+          /**
+           * Carga todas las transacciones relacionadas con una cuenta.
+           * 
+           * @param accountId ID de la cuenta
+           * @return Lista de transacciones de la cuenta
+           */
+          List<Transaction> loadTransactionsByAccountId(String accountId);
+        }
+        EOF
+        
+        # SaveUserPort
+        cat > nexusbank/src/main/java/com/nexusbank/application/port/out/SaveUserPort.java << 'EOF'
+        package com.nexusbank.application.port.out;
+
+        import com.nexusbank.domain.model.User;
+
+        public interface SaveUserPort {
+          /**
+           * Saves a user.
+           * 
+           * @param user User to save
+           */
+          void saveUser(User user);
+        }
+        EOF
+        
+        echo "Created missing port interfaces"
+    
+    - name: Run tests
+      run: cd nexusbank && mvn test

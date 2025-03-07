@@ -1,0 +1,21 @@
+version: "3.8" # Specify the Docker Compose version
+
+services:
+  nexusbank:
+    build: . # Build the image using the Dockerfile in the current directory
+    ports:
+      - "8080:8080" # Map port 8080 on the host to port 8080 on the container
+    environment:
+      SPRING_PROFILES_ACTIVE: prod # Activate the production profile for Spring Boot
+    depends_on:
+      - postgres # Ensure the postgres service starts before nexusbank
+
+  postgres:
+    image: postgres:13 # Use the official Postgres 13 image
+    restart: always # Always restart the container if it stops
+    environment:
+      POSTGRES_DB: nexusbank # Name of the database to be created
+      POSTGRES_USER: nexusbankuser # Username for database access
+      POSTGRES_PASSWORD: secret # Password for the database user
+    ports:
+      - "5432:5432" # Map port 5432 on the host to port 5432 on the container
